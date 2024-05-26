@@ -2,7 +2,11 @@
 import express, { Request, Response } from "express";
 import bodyParser from "body-parser";
 import connectDB from "./db";
+
 import { verifyToken } from "./middleware/auth";
+import { login } from "./controllers/authController";
+import { getUsers } from "./controllers/userController";
+import todoRoutes from "./routes/todoRoutes";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -21,6 +25,12 @@ app.use((req, res, next) => {
 });
 
 app.use(verifyToken);
+
+// Routes
+app.use("/", todoRoutes);
+
+app.post("/api/login", login);
+app.get("/api/users", getUsers);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
