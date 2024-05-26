@@ -1,4 +1,7 @@
 // backend/app.ts
+import dotenv from "dotenv";
+dotenv.config();
+
 import express, { Request, Response } from "express";
 import bodyParser from "body-parser";
 import connectDB from "./db";
@@ -9,6 +12,7 @@ import { getUsers } from "./controllers/userController";
 import todoRoutes from "./routes/todoRoutes";
 
 const app = express();
+
 const PORT = process.env.PORT || 5000;
 connectDB();
 
