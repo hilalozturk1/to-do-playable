@@ -19,10 +19,16 @@ const Todos: React.FC = () => {
   const fetchData = async () => {
     try {
       const userId = localStorage.getItem("id");
+      const token = localStorage.getItem("token");
+
       if (!userId) {
         throw new Error("User ID not found in localStorage");
       }
-      const response = await axios.get(`http://localhost:3000/api/todos/${userId}`);
+      const response = await axios.get(`http://localhost:3000/api/todos/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setTodos(response.data);
     } catch (error) {
       console.error(error);
