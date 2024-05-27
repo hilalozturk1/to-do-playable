@@ -1,8 +1,8 @@
-// backend/app.ts
 import dotenv from "dotenv";
 dotenv.config();
 
-import express, { Request, Response } from "express";
+import express from "express";
+import cors from "cors";
 import bodyParser from "body-parser";
 import connectDB from "./db";
 
@@ -16,25 +16,24 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 connectDB();
 
+// CORS
+app.use(
+  cors({
+    origin: process.env.ALLOWED_ORIGIN || "http://localhost:3001",
+    methods: "GET,POST,PUT,DELETE",
+    allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+  })
+);
+
 app.use(bodyParser.json());
 
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", process.env.MONGO_URI!);
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-  );
-  next();
-});
-
-app.use(verifyToken);
-
-// Routes
-app.use("/", todoRoutes);
-
+// Public Routes
 app.post("/api/login", login);
+
+// Protected Routes
+app.use(verifyToken);
 app.get("/api/users", getUsers);
+app.use("/", todoRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
