@@ -47,13 +47,18 @@ const Todos: React.FC = () => {
     try {
       if (!editTodoTitle) return;
 
+      const token = localStorage.getItem("token");
       const updatedTodo = {
         title: editTodoTitle,
         image: editTodoImage.name,
         attachment: editTodoAttachment.name,
       };
 
-      await axios.put(`http://localhost:3000/api/todos/${editTodoId}`, updatedTodo);
+      await axios.put(`http://localhost:3000/api/todos/${editTodoId}`, updatedTodo, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       fetchData();
 
