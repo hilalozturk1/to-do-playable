@@ -79,7 +79,7 @@ const insertSampleUsers = async () => {
 
     await Promise.all(
       insertedUsers.map(async (user, index) => {
-        user.todos = [insertedTodos[index * 2]._id, insertedTodos[index * 2 + 1]._id];
+        user.todos = [insertedTodos[index * 2].id, insertedTodos[index * 2 + 1].id];
         await user.save();
       })
     );
