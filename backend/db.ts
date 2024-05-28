@@ -54,7 +54,7 @@ const insertSampleUsers = async () => {
         description: "Description for ToDo 1",
         tag: "completed",
         image: "/public/pictures/bod_mainImg_02.jpg",
-        attachment: "public/attachments/sample1.pdf",
+        attachment: "/public/attachments/sample1.pdf",
         user: insertedUsers[0].id,
       },
       {
@@ -62,7 +62,7 @@ const insertSampleUsers = async () => {
         description: "Description for ToDo 2",
         tag: "ready",
         image: "/public/pictures/bod_mainImg_01.jpg",
-        attachment: "public/attachments/sample.pdf",
+        attachment: "/public/attachments/sample.pdf",
         user: insertedUsers[0].id,
       },
       {
@@ -70,7 +70,7 @@ const insertSampleUsers = async () => {
         description: "Description for ToDo 1",
         tag: "completed",
         image: "/public/pictures/bod_mainImg_01.jpg",
-        attachment: "public/attachments/sample.pdf",
+        attachment: "/public/attachments/sample.pdf",
         user: insertedUsers[1].id,
       },
     ];
