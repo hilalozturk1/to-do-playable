@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Inter } from "next/font/google";
-import styles from "@/styles/Home.module.css";
-const inter = Inter({ subsets: ["latin"] });
+import { useRouter } from "next/router";
+import { Container, Row, Col, Form, Button, ListGroup, Image, Modal } from "react-bootstrap";
+
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const Todos: React.FC = () => {
   const [todos, setTodos] = useState<any[] | null>(null);
@@ -11,6 +12,9 @@ const Todos: React.FC = () => {
   const [editTodoImage, setEditTodoImage] = useState<File | null>(null);
   const [editTodoAttachment, setEditTodoAttachment] = useState<File | null>(null);
   const [tagFilter, setTagFilter] = useState<string>("");
+  const [showModal, setShowModal] = useState<boolean>(false);
+
+  const router = useRouter();
 
   useEffect(() => {
     fetchData();
@@ -39,6 +43,7 @@ const Todos: React.FC = () => {
   const handleEdit = (todoId: string, title: string) => {
     setEditTodoId(todoId);
     setEditTodoTitle(title);
+    setShowModal(true);
   };
 
   const handleSaveImage = async () => {
@@ -105,6 +110,7 @@ const Todos: React.FC = () => {
       setEditTodoTitle("");
       setEditTodoImage(null);
       setEditTodoAttachment(null);
+      setShowModal(false);
     } catch (error) {
       console.error("Error saving edited todo:", error);
     }
@@ -112,7 +118,7 @@ const Todos: React.FC = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("id");
-    window.location.href = "/";
+    router.push("/");
   };
 
   const handleTagFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,78 +126,106 @@ const Todos: React.FC = () => {
   };
 
   return (
-    <main className={`${styles.main} ${inter.className}`}>
-      <h1>Todo List</h1>
-      <input
-        type="text"
-        value={tagFilter}
-        onChange={handleTagFilterChange}
-        placeholder="Filter by tag like completed"
-      />
-      <ul>
-        {todos &&
-          todos
-            .filter((todo) => tagFilter === "" || todo.tag === tagFilter)
-            .map((todo: any, index: number) => (
-              <li key={index}>
-                {todo.tag}
-                <br />
-                {todo.title}
-                <br />
-                {editTodoId === todo._id ? (
-                  <>
-                    <input
-                      type="text"
-                      value={editTodoTitle}
-                      onChange={(e) => setEditTodoTitle(e.target.value)}
-                    />
-                    <br />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => setEditTodoImage(e.target.files?.[0] || null)}
-                    />
-                    <br />
-                    <button onClick={handleSaveImage}>Save Image</button>
-                    <br />
-                    <input
-                      type="file"
-                      onChange={(e) => setEditTodoAttachment(e.target.files?.[0] || null)}
-                    />
-                    <br />
-                    <button onClick={handleSaveAttachment}>Save Attachment</button>
-                    <br />
-                    <button onClick={handleSave}>Save Title</button>
-                    <button onClick={() => setEditTodoId(null)}>Cancel</button>
-                  </>
-                ) : (
-                  <>
-                    {todo.image && (
-                      <img
-                        src={`http://localhost:3000${todo.image}`}
-                        alt="Todo Image"
-                        style={{ height: 100, width: 100 }}
-                      />
-                    )}
-                    <br />
-                    {todo.attachment && (
-                      <a href={`http://localhost:3000${todo.attachment}`} download>
-                        Download Attachment
-                      </a>
-                    )}
-                    <br />
-                    <button
-                      onClick={() => handleEdit(todo._id, todo.title)}
-                    >
+    <Container className="mt-4">
+      <Row className="justify-content-center">
+        <Col md={8}>
+          <h1 className="text-center">Todo List</h1>
+          <Form.Control
+            type="text"
+            value={tagFilter}
+            onChange={handleTagFilterChange}
+            placeholder="Filter by tag like completed"
+            className="mb-3"
+          />
+          <ListGroup>
+            {todos &&
+              todos
+                .filter((todo) => tagFilter === "" || todo.tag === tagFilter)
+                .map((todo: any, index: number) => (
+                  <ListGroup.Item
+                    key={index}
+                    className="d-flex justify-content-between align-items-center"
+                  >
+                    <div>
+                      <strong>{todo.tag}</strong>
+                      <br />
+                      {todo.title}
+                      <br />
+                      {todo.image && (
+                        <Image
+                          src={`http://localhost:3000${todo.image}`}
+                          alt="Todo Image"
+                          thumbnail
+                          style={{ height: 100, width: 100 }}
+                        />
+                      )}
+                      <br />
+                      {todo.attachment && (
+                        <a href={`http://localhost:3000${todo.attachment}`} download>
+                          Download Attachment
+                        </a>
+                      )}
+                    </div>
+                    <Button variant="primary" onClick={() => handleEdit(todo._id, todo.title)}>
                       Edit
-                    </button>
-                  </>
-                )}
-              </li>
-            ))}
-      </ul>
-      <button onClick={handleLogout}>Logout</button>
-    </main>
+                    </Button>
+                  </ListGroup.Item>
+                ))}
+          </ListGroup>
+          <Button variant="danger" className="mt-3" onClick={handleLogout}>
+            Logout
+          </Button>
+        </Col>
+      </Row>
+
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Todo</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group controlId="formTitle">
+              <Form.Label>Title</Form.Label>
+              <Form.Control
+                type="text"
+                value={editTodoTitle}
+                onChange={(e) => setEditTodoTitle(e.target.value)}
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="formImage" className="mt-3">
+              <Form.Label>Image</Form.Label>
+              <Form.Control
+                type="file"
+                accept="image/*"
+                onChange={(e) => setEditTodoImage(e.target.files?.[0] || null)}
+              />
+              <Button variant="secondary" className="mt-2" onClick={handleSaveImage}>
+                Save Image
+              </Button>
+            </Form.Group>
+            <Form.Group controlId="formAttachment" className="mt-3">
+              <Form.Label>Attachment</Form.Label>
+              <Form.Control
+                type="file"
+                onChange={(e) => setEditTodoAttachment(e.target.files?.[0] || null)}
+              />
+              <Button variant="secondary" className="mt-2" onClick={handleSaveAttachment}>
+                Save Attachment
+              </Button>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleSave}>
+            Save Title
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </Container>
   );
 };
 
