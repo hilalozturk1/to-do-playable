@@ -162,7 +162,7 @@ const Todos: React.FC = () => {
                       <br />
                       {todo.attachment && (
                         <a href={`http://localhost:3000${todo.attachment}`} download>
-                          Download Attachment
+                          {todo.attachment.split("/").pop()}
                         </a>
                       )}
                     </div>
