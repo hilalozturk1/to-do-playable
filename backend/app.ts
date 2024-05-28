@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config();
+import path from "path";
 
 import express from "express";
 import cors from "cors";
@@ -27,8 +28,9 @@ app.use(
 
 app.use(bodyParser.json());
 
-// Public Routes
 app.post("/api/login", login);
+
+app.use("/public", express.static(path.join(__dirname, "public")));
 
 // Protected Routes
 app.use(verifyToken);

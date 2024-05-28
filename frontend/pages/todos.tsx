@@ -8,8 +8,8 @@ const Todos: React.FC = () => {
   const [todos, setTodos] = useState<any[] | null>(null);
   const [editTodoId, setEditTodoId] = useState<string | null>(null);
   const [editTodoTitle, setEditTodoTitle] = useState<string>("");
-  const [editTodoImage, setEditTodoImage] = useState<string>("");
-  const [editTodoAttachment, setEditTodoAttachment] = useState<string>("");
+  const [editTodoImage, setEditTodoImage] = useState<File | null>(null);
+  const [editTodoAttachment, setEditTodoAttachment] = useState<File | null>(null);
   const [tagFilter, setTagFilter] = useState<string>("");
 
   useEffect(() => {
@@ -36,11 +36,55 @@ const Todos: React.FC = () => {
     }
   };
 
-  const handleEdit = (todoId: string, title: string, image: string, attachment: string) => {
+  const handleEdit = (todoId: string, title: string) => {
     setEditTodoId(todoId);
     setEditTodoTitle(title);
-    setEditTodoImage(image);
-    setEditTodoAttachment(attachment);
+  };
+
+  const handleSaveImage = async () => {
+    try {
+      if (!editTodoImage || !editTodoId) return;
+
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("image", editTodoImage);
+      formData.append("todoId", editTodoId);
+
+      await axios.post(`http://localhost:3000/api/public/image`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      setEditTodoImage(null);
+      fetchData();
+    } catch (error) {
+      console.error("Error saving edited image:", error);
+    }
+  };
+
+  const handleSaveAttachment = async () => {
+    try {
+      if (!editTodoAttachment || !editTodoId) return;
+
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("file", editTodoAttachment);
+      formData.append("todoId", editTodoId);
+
+      await axios.post(`http://localhost:3000/api/public/file`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      setEditTodoAttachment(null);
+      fetchData();
+    } catch (error) {
+      console.error("Error saving edited attachment:", error);
+    }
   };
 
   const handleSave = async () => {
@@ -48,11 +92,7 @@ const Todos: React.FC = () => {
       if (!editTodoTitle) return;
 
       const token = localStorage.getItem("token");
-      const updatedTodo = {
-        title: editTodoTitle,
-        image: editTodoImage.name,
-        attachment: editTodoAttachment.name,
-      };
+      const updatedTodo = { title: editTodoTitle };
 
       await axios.put(`http://localhost:3000/api/todos/${editTodoId}`, updatedTodo, {
         headers: {
@@ -61,11 +101,10 @@ const Todos: React.FC = () => {
       });
 
       fetchData();
-
       setEditTodoId(null);
       setEditTodoTitle("");
-      setEditTodoImage("");
-      setEditTodoAttachment("");
+      setEditTodoImage(null);
+      setEditTodoAttachment(null);
     } catch (error) {
       console.error("Error saving edited todo:", error);
     }
@@ -96,9 +135,9 @@ const Todos: React.FC = () => {
             .map((todo: any, index: number) => (
               <li key={index}>
                 {todo.tag}
-                <br></br>
+                <br />
                 {todo.title}
-                <br></br>
+                <br />
                 {editTodoId === todo._id ? (
                   <>
                     <input
@@ -106,38 +145,43 @@ const Todos: React.FC = () => {
                       value={editTodoTitle}
                       onChange={(e) => setEditTodoTitle(e.target.value)}
                     />
-                    <br></br>
-                    {/* */}
+                    <br />
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => setEditTodoImage(e.target.files?.[0])}
+                      onChange={(e) => setEditTodoImage(e.target.files?.[0] || null)}
                     />
-                    <br></br>
+                    <br />
+                    <button onClick={handleSaveImage}>Save Image</button>
+                    <br />
                     <input
                       type="file"
-                      onChange={(e) => setEditTodoAttachment(e.target.files?.[0])}
+                      onChange={(e) => setEditTodoAttachment(e.target.files?.[0] || null)}
                     />
-                    <br></br>
-                    <button onClick={handleSave}>Save</button>
+                    <br />
+                    <button onClick={handleSaveAttachment}>Save Attachment</button>
+                    <br />
+                    <button onClick={handleSave}>Save Title</button>
                     <button onClick={() => setEditTodoId(null)}>Cancel</button>
                   </>
                 ) : (
                   <>
-                    {/*  */}
                     {todo.image && (
-                      <img src={todo.image} alt="Todo Image" style={{ height: 100, width: 100 }} />
+                      <img
+                        src={`http://localhost:3000${todo.image}`}
+                        alt="Todo Image"
+                        style={{ height: 100, width: 100 }}
+                      />
                     )}
-
-                    <br></br>
+                    <br />
                     {todo.attachment && (
-                      <a href={todo.attachment} download>
+                      <a href={`http://localhost:3000${todo.attachment}`} download>
                         Download Attachment
                       </a>
                     )}
-                    <br></br>
+                    <br />
                     <button
-                      onClick={() => handleEdit(todo._id, todo.title, todo.image, todo.attachment)}
+                      onClick={() => handleEdit(todo._id, todo.title)}
                     >
                       Edit
                     </button>
